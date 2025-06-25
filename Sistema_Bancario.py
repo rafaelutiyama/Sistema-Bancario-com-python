@@ -1,72 +1,88 @@
-saldo = 0.0;
-contador = 0
+# Constantes
+LIMITE_SAQUE = 500.0
+LIMITE_SAQUES_DIARIOS = 3
 
+# Estado da conta
+conta = {
+    "saldo": 0.0,
+    "saques": 0,
+    "extrato": []
+}
+
+# Função auxiliar para ler número com validação
+def ler_float(mensagem, minimo=None, maximo=None):
+    while True:
+        try:
+            valor = float(input(mensagem))
+            if minimo is not None and valor < minimo:
+                print(f"⚠️ Valor mínimo permitido: R${minimo:.2f}")
+            elif maximo is not None and valor > maximo:
+                print(f"⚠️ Valor máximo permitido: R${maximo:.2f}")
+            else:
+                return valor
+        except ValueError:
+            print("❌ Entrada inválida. Digite um número válido.")
+
+# Funções principais
 def deposito():
-
-  global saldo
-  dep = float(input("Quanto deseja deporsitar: "))
-  if dep < 1:
-    while dep < 1:
-      dep = float(input("Digite um valor valido."))
-  saldo += dep
-  print(f"Deposito de R${dep: .2f} feito com sucesso.\n")
-  print("-----------------------------------------")
+    valor = ler_float("💰 Quanto deseja depositar? R$ ", minimo=1)
+    conta["saldo"] += valor
+    conta["extrato"].append(f"Depósito: +R${valor:.2f}")
+    print(f"✅ Depósito de R${valor:.2f} realizado com sucesso!\n")
 
 def saque():
+    if conta["saques"] >= LIMITE_SAQUES_DIARIOS:
+        print("❌ Limite diário de saques atingido.\n")
+        return
 
-  global saldo
-  global contador
+    valor = ler_float("💸 Quanto deseja sacar? R$ ", minimo=1, maximo=LIMITE_SAQUE)
 
-  if contador >=3:
-    print("Limite de saques diarios atingidos.")
-    return
+    if valor > conta["saldo"]:
+        print("❌ Saldo insuficiente.\n")
+        return
 
-  saq = float(input("Quanto deseja sacar: "))
-
-  if saq > 500:
-    while saq > 500:
-      saq = float(input("Digite um valor de no max R$500,00."))
-  if saq < 1:
-    while saq < 1:
-      saq = float(input("Digite um valor de no positiva (maior que R$1,00)."))
-
-  if(saq > saldo):
-    print("Saldo insuficiente.")
-    return
-  else:
-    print(f"Saque de {saq: .2f} realizado com sucesso.")
-    saldo -= saq
-    contador += 1
-  print("\n-----------------------------------------")
-
+    conta["saldo"] -= valor
+    conta["saques"] += 1
+    conta["extrato"].append(f"Saque:    -R${valor:.2f}")
+    print(f"✅ Saque de R${valor:.2f} realizado com sucesso!\n")
 
 def extrato():
+    print("\n📄 === EXTRATO ===")
+    if not conta["extrato"]:
+        print("Nenhuma movimentação realizada.")
+    else:
+        for transacao in conta["extrato"]:
+            print(transacao)
+    print(f"\nSaldo atual: R${conta['saldo']:.2f}")
+    print(f"Saques feitos hoje: {conta['saques']}/{LIMITE_SAQUES_DIARIOS}")
+    print("=========================\n")
 
-  print(f"Seu saaldo atual é de R${saldo: .2f}.")
-  print("\n-----------------------------------------")
+# Loop principal
+def menu():
+    while True:
+        try:
+            opcao = int(input('''
+=============================
+🏦 BANCO DIGITAL - MENU
+1️⃣  Depositar
+2️⃣  Sacar
+3️⃣  Ver Extrato
+0️⃣  Sair
+Escolha uma opção: '''))
+            print()
+            if opcao == 1:
+                deposito()
+            elif opcao == 2:
+                saque()
+            elif opcao == 3:
+                extrato()
+            elif opcao == 0:
+                print("👋 Programa encerrado. Obrigado por usar nosso sistema!")
+                break
+            else:
+                print("❌ Opção inválida. Tente novamente.\n")
+        except ValueError:
+            print("❌ Entrada inválida. Digite um número.\n")
 
-
-while True:
-
-  opcao = int(input('''
----------------------------------------
-Digite o que deseja fazer:
-1 para deposito:
-2 para saque:
-3 para ver extrato
-0 para interromper
-Escolha:
-  '''))
-
-  if opcao == 1:
-    deposito()
-  elif opcao ==2:
-    saque()
-  elif opcao == 3:
-    extrato()
-  elif opcao == 0:
-    print("Programa encerrado.")
-    break
-  else:
-    print("Opcao invalida.")
-
+# Executar o programa
+menu()
