@@ -1,11 +1,16 @@
+from datetime import date, timedelta
+from datetime import datetime
+
 # Constantes
 LIMITE_SAQUE = 500.0
 LIMITE_SAQUES_DIARIOS = 3
+LIMITE_TRANSACAO_DIARIO = 10
 
 # Estado da conta
 conta = {
     "saldo": 0.0,
     "saques": 0,
+    "transacoes": 0,
     "extrato": []
 }
 
@@ -25,14 +30,25 @@ def ler_float(mensagem, minimo=None, maximo=None):
 
 # Funções principais
 def deposito():
+    if conta["transacoes"] >= LIMITE_TRANSACAO_DIARIO:
+        print("❌ Limite de transações diárias atingido.\n")
+        print(f"Próximo saque disponível em: {date.today() + timedelta(days=1)}")
+        return
+
     valor = ler_float("💰 Quanto deseja depositar? R$ ", minimo=1)
     conta["saldo"] += valor
-    conta["extrato"].append(f"Depósito: +R${valor:.2f}")
+    conta["transacoes"] += 1
+    conta["extrato"].append(f"Depósito: +R${valor:.2f},  {datetime.today().strftime('%Y-%m-%d %H:%M:%S')}")
     print(f"✅ Depósito de R${valor:.2f} realizado com sucesso!\n")
 
 def saque():
     if conta["saques"] >= LIMITE_SAQUES_DIARIOS:
         print("❌ Limite diário de saques atingido.\n")
+        return
+
+    if conta["transacoes"] >= LIMITE_TRANSACAO_DIARIO:
+        print("❌ Limite de transações diárias atingido.\n")
+        print(f"Próximo saque disponível em: {date.today() + timedelta(days=1)}")
         return
 
     valor = ler_float("💸 Quanto deseja sacar? R$ ", minimo=1, maximo=LIMITE_SAQUE)
@@ -43,7 +59,8 @@ def saque():
 
     conta["saldo"] -= valor
     conta["saques"] += 1
-    conta["extrato"].append(f"Saque:    -R${valor:.2f}")
+    conta["transacoes"] += 1
+    conta["extrato"].append(f"Saque:    -R${valor:.2f},  {datetime.today().strftime('%Y-%m-%d %H:%M:%S')}")
     print(f"✅ Saque de R${valor:.2f} realizado com sucesso!\n")
 
 def extrato():
@@ -55,6 +72,7 @@ def extrato():
             print(transacao)
     print(f"\nSaldo atual: R${conta['saldo']:.2f}")
     print(f"Saques feitos hoje: {conta['saques']}/{LIMITE_SAQUES_DIARIOS}")
+    print(f"Transações feitas hoje: {conta['transacoes']}/{LIMITE_TRANSACAO_DIARIO}")
     print("=========================\n")
 
 # Loop principal
