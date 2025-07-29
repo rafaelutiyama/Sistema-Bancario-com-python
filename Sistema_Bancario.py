@@ -82,13 +82,42 @@ def extrato():
     print(f"Transações feitas hoje: {conta['transacoes']}/{LIMITE_TRANSACAO_DIARIO}")
     print("=========================\n")
 
+def ver_CPF():
+    def verificador1(cpf):
+        pesos = [10, 9, 8, 7, 6, 5, 4, 3, 2]
+        soma = sum(cpf[i] * pesos[i] for i in range(9))
+        resto = soma % 11
+        return 0 if resto < 2 else 11 - resto
+
+    def verificador2(cpf):
+        pesos = [11, 10, 9, 8, 7, 6, 5, 4, 3, 2]
+        soma = sum(cpf[i] * pesos[i] for i in range(10))
+        resto = soma % 11
+        return 0 if resto < 2 else 11 - resto
+
+    while True:
+        cpf_str = input("Digite seu CPF (somente números): ").strip()
+        if not cpf_str.isdigit() or len(cpf_str) != 11:
+            print("⚠️ CPF deve conter 11 dígitos numéricos.")
+            continue
+
+        cpf = [int(char) for char in cpf_str]
+
+        dig1 = verificador1(cpf)
+        dig2 = verificador2(cpf)
+
+        if dig1 == cpf[9] and dig2 == cpf[10]:
+            cpf = ''.join(str(digito) for digito in cpf)
+            return cpf  # CPF válido e retornado
+        else:
+            print("⚠️ CPF inválido. Tente novamente.")
+
 # === Cadastro e login ===
 def criar_conta():
     nome = input("Digite o nome do novo usuário: ").strip().lower()
     caminho = os.path.join(PASTA_USUARIOS, f"usuario_{nome}.json")
 
-
-    cpf = input("Digite seu CPF: ").strip().lower()
+    cpf = ver_CPF()
 
     if os.path.exists(caminho):
         print(f"⚠️ O usuário '{nome}' já existe!\n")
